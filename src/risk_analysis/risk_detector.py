@@ -32,6 +32,21 @@ def load_classified_clauses(file_path):
 
 
 # ============================================================
+# DEFAULT RISK
+# ============================================================
+
+def default_risk():
+
+    return {
+        "risk_detected": False,
+        "risk_level": "LOW",
+        "risk_score": 0,
+        "risk_type": "No Significant Risk Detected",
+        "reason": "No significant contractual risk identified."
+    }
+
+
+# ============================================================
 # RISK DETECTION FOR ONE CLAUSE
 # ============================================================
 
@@ -40,6 +55,11 @@ def detect_risk(clause):
     title = clause.get(
         "title",
         ""
+    ).lower().strip()
+
+    text = clause.get(
+        "text",
+        ""
     ).lower()
 
     category = clause.get(
@@ -47,25 +67,209 @@ def detect_risk(clause):
         ""
     )
 
-    text = clause.get(
-        "text",
-        ""
-    ).lower()
+    risk = default_risk()
 
-    # --------------------------------------------------------
-    # DEFAULT RESULT
-    # --------------------------------------------------------
-
-    risk = {
-        "risk_detected": False,
-        "risk_level": "LOW",
-        "risk_score": 0,
-        "risk_type": "No Significant Risk Detected",
-        "reason": "No significant contractual risk identified."
-    }
 
     # ========================================================
-    # CAPITAL CONTRIBUTIONS
+    # 1. TERMINATION
+    # ========================================================
+
+    if any(
+        keyword in title
+        for keyword in [
+            "termination",
+            "liquidation",
+            "termination and liquidation"
+        ]
+    ):
+
+        return {
+            "risk_detected": True,
+            "risk_level": "HIGH",
+            "risk_score": 70,
+            "risk_type": "Termination & Asset Distribution",
+            "reason": (
+                "The clause contains provisions governing "
+                "termination, payment of obligations, and "
+                "distribution or liquidation of assets."
+            )
+        }
+
+
+    # ========================================================
+    # 2. RESTRICTIVE COVENANTS
+    # ========================================================
+
+    if any(
+        keyword in title
+        for keyword in [
+            "restrictive covenant",
+            "restrictive covenants",
+            "non-compete",
+            "non compete",
+            "non-solicit",
+            "non solicit"
+        ]
+    ):
+
+        return {
+            "risk_detected": True,
+            "risk_level": "HIGH",
+            "risk_score": 75,
+            "risk_type": "Restrictive Covenants",
+            "reason": (
+                "The clause imposes restrictions on activities "
+                "such as competition, solicitation, or other "
+                "post-contract conduct."
+            )
+        }
+
+
+    # ========================================================
+    # 3. INDEMNIFICATION
+    # ========================================================
+
+    if any(
+        keyword in title
+        for keyword in [
+            "indemnification",
+            "indemnity",
+            "indemnification and liability"
+        ]
+    ):
+
+        return {
+            "risk_detected": True,
+            "risk_level": "HIGH",
+            "risk_score": 70,
+            "risk_type": "Indemnification Exposure",
+            "reason": (
+                "The clause contains indemnification obligations "
+                "that may create financial exposure for a party."
+            )
+        }
+
+
+    # ========================================================
+    # 4. LIMITATION OF LIABILITY
+    # ========================================================
+
+    if any(
+        keyword in title
+        for keyword in [
+            "limitation of liability",
+            "limitation on liability",
+            "liability"
+        ]
+    ):
+
+        if any(
+            keyword in text
+            for keyword in [
+                "liable",
+                "liability",
+                "damages",
+                "consequential damages",
+                "indirect damages"
+            ]
+        ):
+
+            return {
+                "risk_detected": True,
+                "risk_level": "MEDIUM",
+                "risk_score": 60,
+                "risk_type": "Liability Exposure",
+                "reason": (
+                    "The clause contains provisions governing "
+                    "liability or damages and may limit or "
+                    "increase financial exposure."
+                )
+            }
+
+
+    # ========================================================
+    # 5. CONFIDENTIALITY
+    # ========================================================
+
+    if any(
+        keyword in title
+        for keyword in [
+            "confidentiality",
+            "confidential information",
+            "non-disclosure",
+            "nondisclosure"
+        ]
+    ):
+
+        return {
+            "risk_detected": True,
+            "risk_level": "MEDIUM",
+            "risk_score": 45,
+            "risk_type": "Confidentiality Obligation",
+            "reason": (
+                "The clause creates obligations relating to "
+                "the protection and disclosure of confidential "
+                "information."
+            )
+        }
+
+
+    # ========================================================
+    # 6. INTELLECTUAL PROPERTY
+    # ========================================================
+
+    if any(
+        keyword in title
+        for keyword in [
+            "intellectual property",
+            "proprietary rights",
+            "ownership of intellectual property",
+            "copyright",
+            "patent"
+        ]
+    ):
+
+        return {
+            "risk_detected": True,
+            "risk_level": "MEDIUM",
+            "risk_score": 55,
+            "risk_type": "Intellectual Property Rights",
+            "reason": (
+                "The clause governs ownership, use, or rights "
+                "associated with intellectual property."
+            )
+        }
+
+
+    # ========================================================
+    # 7. PAYMENT / COMPENSATION
+    # ========================================================
+
+    if any(
+        keyword in title
+        for keyword in [
+            "payment",
+            "compensation",
+            "fees",
+            "fee",
+            "remuneration"
+        ]
+    ):
+
+        return {
+            "risk_detected": True,
+            "risk_level": "MEDIUM",
+            "risk_score": 45,
+            "risk_type": "Payment Obligation",
+            "reason": (
+                "The clause establishes financial obligations "
+                "or payment terms that may affect the parties."
+            )
+        }
+
+
+    # ========================================================
+    # 8. CAPITAL CONTRIBUTIONS
     # ========================================================
 
     if category == "Capital Contributions":
@@ -79,7 +283,7 @@ def detect_risk(clause):
             ]
         ):
 
-            risk = {
+            return {
                 "risk_detected": True,
                 "risk_level": "MEDIUM",
                 "risk_score": 50,
@@ -92,42 +296,43 @@ def detect_risk(clause):
 
 
     # ========================================================
-    # AUTHORITY & GOVERNANCE
+    # 9. AUTHORITY / GOVERNANCE
     # ========================================================
 
-    elif category == "Authority & Governance":
+    if category == "Authority & Governance":
 
         if any(
             phrase in text
             for phrase in [
                 "written consent",
                 "approval of both",
-                "consent or approval of both"
+                "consent or approval of both",
+                "unanimous consent"
             ]
         ):
 
-            risk = {
+            return {
                 "risk_detected": True,
                 "risk_level": "MEDIUM",
                 "risk_score": 50,
                 "risk_type": "Joint Approval Requirement",
                 "reason": (
                     "Certain actions require approval or "
-                    "written consent from both Joint Venturers, "
-                    "which may slow decision-making."
+                    "consent from multiple parties, which "
+                    "may slow decision-making."
                 )
             }
 
 
     # ========================================================
-    # PROFIT & LOSS SHARING
+    # 10. PROFIT & LOSS
     # ========================================================
 
-    elif category == "Profit & Loss Sharing":
+    if category == "Profit & Loss Sharing":
 
         if "50%" in text:
 
-            risk = {
+            return {
                 "risk_detected": False,
                 "risk_level": "LOW",
                 "risk_score": 10,
@@ -140,10 +345,10 @@ def detect_risk(clause):
 
 
     # ========================================================
-    # ACCOUNTING & RECORDS
+    # 11. ACCOUNTING
     # ========================================================
 
-    elif category == "Accounting & Records":
+    if category == "Accounting & Records":
 
         if any(
             phrase in text
@@ -154,52 +359,59 @@ def detect_risk(clause):
             ]
         ):
 
-            risk = {
+            return {
                 "risk_detected": False,
                 "risk_level": "LOW",
                 "risk_score": 10,
                 "risk_type": "Financial Record Controls",
                 "reason": (
                     "The agreement provides for maintenance "
-                    "of books and records and permits an "
-                    "independent audit under specified conditions."
+                    "of financial records and accounting controls."
                 )
             }
 
 
     # ========================================================
-    # TERM & DURATION
+    # 12. TERM / DURATION
     # ========================================================
 
-    elif category == "Term & Duration":
+    if any(
+        keyword in title
+        for keyword in [
+            "term",
+            "duration",
+            "renewal"
+        ]
+    ):
 
         if any(
             phrase in text
             for phrase in [
                 "effective until",
                 "scheduled termination",
-                "commence",
-                "extended by written agreement"
+                "extended by written agreement",
+                "automatic renewal",
+                "renewal"
             ]
         ):
 
-            risk = {
+            return {
                 "risk_detected": True,
                 "risk_level": "MEDIUM",
                 "risk_score": 50,
-                "risk_type": "Fixed Contract Term",
+                "risk_type": "Contract Duration",
                 "reason": (
-                    "The agreement has a defined term and "
-                    "requires a written agreement for extension."
+                    "The clause establishes a defined contract "
+                    "term or renewal condition."
                 )
             }
 
 
     # ========================================================
-    # DISTRIBUTIONS
+    # 13. DISTRIBUTIONS
     # ========================================================
 
-    elif category == "Distributions":
+    if category == "Distributions":
 
         if any(
             phrase in text
@@ -210,113 +422,136 @@ def detect_risk(clause):
             ]
         ):
 
-            risk = {
+            return {
                 "risk_detected": True,
                 "risk_level": "MEDIUM",
                 "risk_score": 40,
                 "risk_type": "Distribution Restrictions",
                 "reason": (
                     "Distributions are subject to conditions "
-                    "and restrictions that may limit access "
-                    "to Joint Venture funds."
+                    "or restrictions that may limit access "
+                    "to funds."
                 )
             }
 
 
     # ========================================================
-    # TAX & LEGAL STRUCTURE
+    # 14. TAX
     # ========================================================
 
-    elif category == "Tax & Legal Structure":
+    if any(
+        keyword in title
+        for keyword in [
+            "tax",
+            "internal revenue",
+            "tax election"
+        ]
+    ):
 
-        if any(
-            phrase in text
-            for phrase in [
-                "section 761",
-                "subchapter k",
-                "income tax purposes"
-            ]
-        ):
-
-            risk = {
-                "risk_detected": True,
-                "risk_level": "MEDIUM",
-                "risk_score": 50,
-                "risk_type": "Tax Structure Complexity",
-                "reason": (
-                    "The agreement contains specific tax "
-                    "elections and provisions under the "
-                    "Internal Revenue Code."
-                )
-            }
+        return {
+            "risk_detected": True,
+            "risk_level": "MEDIUM",
+            "risk_score": 50,
+            "risk_type": "Tax Structure Complexity",
+            "reason": (
+                "The clause contains tax-related elections "
+                "or obligations that may require specialized "
+                "review."
+            )
+        }
 
 
     # ========================================================
-    # TERMINATION & LIQUIDATION
+    # 15. TRANSFER / ASSIGNMENT
     # ========================================================
 
-    elif category == "Termination & Liquidation":
-
-        if any(
-            phrase in text
-            for phrase in [
-                "termination",
-                "debt shall be paid",
-                "assets",
-                "liquidation"
-            ]
-        ):
-
-            risk = {
-                "risk_detected": True,
-                "risk_level": "HIGH",
-                "risk_score": 70,
-                "risk_type": "Termination & Asset Distribution",
-                "reason": (
-                    "The clause contains provisions for "
-                    "payment of debts and distribution of "
-                    "Joint Venture assets following termination."
-                )
-            }
-
-
-    # ========================================================
-    # TRANSFER & ASSIGNMENT
-    # ========================================================
-
-    elif category == "Transfer & Assignment":
+    if any(
+        keyword in title
+        for keyword in [
+            "transfer",
+            "assignment",
+            "sale or purchase",
+            "interest of joint venturer"
+        ]
+    ):
 
         if any(
             phrase in text
             for phrase in [
                 "transfer",
-                "sell",
+                "assign",
+                "assignee",
                 "pledge",
                 "mortgage",
-                "assignee"
+                "sell"
             ]
         ):
 
-            risk = {
+            return {
                 "risk_detected": True,
                 "risk_level": "MEDIUM",
                 "risk_score": 50,
                 "risk_type": "Transfer Restrictions",
                 "reason": (
-                    "A Joint Venturer cannot freely transfer "
-                    "or dispose of its interest without the "
-                    "consent of the other Joint Venturer."
+                    "The clause restricts the ability of a "
+                    "party to transfer, assign, sell, or "
+                    "otherwise dispose of its contractual interest."
                 )
             }
 
 
     # ========================================================
-    # NOTICES
+    # 16. DISPUTE RESOLUTION
     # ========================================================
 
-    elif category == "Notices":
+    if any(
+        keyword in title
+        for keyword in [
+            "dispute",
+            "dispute resolution",
+            "arbitration",
+            "mediation",
+            "litigation"
+        ]
+    ):
 
-        risk = {
+        return {
+            "risk_detected": True,
+            "risk_level": "MEDIUM",
+            "risk_score": 50,
+            "risk_type": "Dispute Resolution",
+            "reason": (
+                "The clause establishes procedures or "
+                "requirements for resolving contractual disputes."
+            )
+        }
+
+
+    # ========================================================
+    # 17. GOVERNING LAW
+    # ========================================================
+
+    if category == "Governing Law":
+
+        return {
+            "risk_detected": True,
+            "risk_level": "LOW",
+            "risk_score": 20,
+            "risk_type": "Jurisdiction",
+            "reason": (
+                "The agreement specifies the applicable "
+                "governing law or jurisdiction."
+            )
+        }
+
+
+    # ========================================================
+    # 18. NOTICES
+    # ========================================================
+
+    if category == "Notices":
+
+        return {
             "risk_detected": False,
             "risk_level": "LOW",
             "risk_score": 5,
@@ -329,116 +564,80 @@ def detect_risk(clause):
 
 
     # ========================================================
-    # GOVERNING LAW
+    # 19. BINDING EFFECT
     # ========================================================
 
-    elif category == "Governing Law":
+    if category == "Binding Effect":
 
-        if "pennsylvania" in text:
-
-            risk = {
-                "risk_detected": True,
-                "risk_level": "LOW",
-                "risk_score": 20,
-                "risk_type": "Jurisdiction",
-                "reason": (
-                    "The agreement is governed by the laws "
-                    "of the Commonwealth of Pennsylvania."
-                )
-            }
-
-
-    # ========================================================
-    # BINDING EFFECT
-    # ========================================================
-
-    elif category == "Binding Effect":
-
-        if "successors" in text:
-
-            risk = {
-                "risk_detected": False,
-                "risk_level": "LOW",
-                "risk_score": 5,
-                "risk_type": "Binding Effect",
-                "reason": (
-                    "The agreement extends its binding effect "
-                    "to specified successors and assigns."
-                )
-            }
-
-
-    # ========================================================
-    # EXECUTION & SIGNATURES
-    # ========================================================
-
-    elif category == "Execution & Signatures":
-
-        risk = {
+        return {
             "risk_detected": False,
             "risk_level": "LOW",
             "risk_score": 5,
-            "risk_type": "Execution Formalities",
+            "risk_type": "Binding Effect",
             "reason": (
-                "The agreement permits execution in "
-                "counterparts and provides signature fields."
+                "The agreement specifies the parties or "
+                "successors to whom the agreement is binding."
             )
         }
 
 
     # ========================================================
-    # BUSINESS SCOPE
+    # 20. EXECUTION
     # ========================================================
 
-    elif category == "Business Scope":
+    if category == "Execution & Signatures":
 
-        risk = {
+        return {
+            "risk_detected": False,
+            "risk_level": "LOW",
+            "risk_score": 5,
+            "risk_type": "Execution Formalities",
+            "reason": (
+                "The agreement provides execution and "
+                "signature formalities."
+            )
+        }
+
+
+    # ========================================================
+    # 21. DEFAULT BUSINESS SCOPE
+    # ========================================================
+
+    if category == "Business Scope":
+
+        return {
             "risk_detected": False,
             "risk_level": "LOW",
             "risk_score": 10,
             "risk_type": "Business Scope",
             "reason": (
                 "The agreement defines the business activities "
-                "and products covered by the Joint Venture."
+                "covered by the contract."
             )
         }
 
 
     # ========================================================
-    # OFFICE & LOCATION
+    # 22. DEFAULT OFFICE / LOCATION
     # ========================================================
 
-    elif category == "Office & Location":
+    if category == "Office & Location":
 
-        risk = {
+        return {
             "risk_detected": False,
             "risk_level": "LOW",
             "risk_score": 5,
             "risk_type": "Business Location",
             "reason": (
-                "The agreement specifies the principal "
-                "business location of the Joint Venture."
+                "The agreement specifies the business "
+                "location or place of operations."
             )
         }
 
 
     # ========================================================
-    # JOINT VENTURE IDENTITY
+    # RETURN DEFAULT
     # ========================================================
-
-    elif category == "Joint Venture Identity":
-
-        risk = {
-            "risk_detected": False,
-            "risk_level": "LOW",
-            "risk_score": 5,
-            "risk_type": "Contract Identification",
-            "reason": (
-                "The clause identifies the Joint Venture "
-                "and its principal business location."
-            )
-        }
-
 
     return risk
 
@@ -604,10 +803,6 @@ if __name__ == "__main__":
 
     try:
 
-        # ----------------------------------------------------
-        # LOAD
-        # ----------------------------------------------------
-
         clauses = load_classified_clauses(
             file_path
         )
@@ -616,25 +811,13 @@ if __name__ == "__main__":
             f"\nLoaded {len(clauses)} classified clauses."
         )
 
-        # ----------------------------------------------------
-        # ANALYZE
-        # ----------------------------------------------------
-
         results = analyze_clauses(
             clauses
         )
 
-        # ----------------------------------------------------
-        # DISPLAY
-        # ----------------------------------------------------
-
         display_results(
             results
         )
-
-        # ----------------------------------------------------
-        # SAVE
-        # ----------------------------------------------------
 
         output_path = os.path.join(
             "data",

@@ -1,0 +1,123 @@
+================================================================================
+CONTRACT RISK ASSESSMENT REPORT
+================================================================================
+
+Report Generated : 2026-09-04 09:03:11
+
+--------------------------------------------------------------------------------
+OVERALL RISK SUMMARY
+--------------------------------------------------------------------------------
+Total Clauses       : 16
+Overall Risk Score  : 27.19 / 100
+Overall Risk Level  : LOW
+High Risk Clauses   : 1
+Medium Risk Clauses : 6
+Low Risk Clauses    : 9
+
+--------------------------------------------------------------------------------
+HIGH RISK CLAUSES
+--------------------------------------------------------------------------------
+
+Clause 11: Procedure on Termination and Liquidation
+Risk Score : 70 / 100
+Risk Type  : Termination & Asset Distribution
+Reason     : The clause contains provisions for payment of debts and distribution of Joint Venture assets following termination.
+
+--------------------------------------------------------------------------------
+MEDIUM RISK CLAUSES
+--------------------------------------------------------------------------------
+
+Clause 3: Capital Contributions
+Risk Score : 50 / 100
+Risk Type  : Funding Uncertainty
+Reason     : The agreement does not require capital contributions unless mutually agreed.
+
+Clause 5: Powers and Authority of the Joint Venturers
+Risk Score : 50 / 100
+Risk Type  : Joint Approval Requirement
+Reason     : Certain actions require approval or written consent from both Joint Venturers, which may slow decision-making.
+
+Clause 8: Term of Joint Venture
+Risk Score : 50 / 100
+Risk Type  : Fixed Contract Term
+Reason     : The agreement has a defined term and requires a written agreement for extension.
+
+Clause 9: Distributions
+Risk Score : 40 / 100
+Risk Type  : Distribution Restrictions
+Reason     : Distributions are subject to conditions and restrictions that may limit access to Joint Venture funds.
+
+Clause 10: Internal Revenue Code Election
+Risk Score : 50 / 100
+Risk Type  : Tax Structure Complexity
+Reason     : The agreement contains specific tax elections and provisions under the Internal Revenue Code.
+
+Clause 12: Sale or Purchase of Interest of Joint Venturer Prohibited
+Risk Score : 50 / 100
+Risk Type  : Transfer Restrictions
+Reason     : A Joint Venturer cannot freely transfer or dispose of its interest without the consent of the other Joint Venturer.
+
+--------------------------------------------------------------------------------
+LOW RISK CLAUSES
+--------------------------------------------------------------------------------
+
+Clause 1: Name of the Joint Venture
+Risk Score : 5 / 100
+Risk Type  : Contract Identification
+
+Clause 2: Scope of the Joint Venture Business
+Risk Score : 10 / 100
+Risk Type  : Business Scope
+
+Clause 4: Offices of the Joint Venture
+Risk Score : 5 / 100
+Risk Type  : Business Location
+
+Clause 6: Division of Income and Losses
+Risk Score : 10 / 100
+Risk Type  : Equal Profit/Loss Allocation
+
+Clause 7: Accounting Provisions
+Risk Score : 10 / 100
+Risk Type  : Financial Record Controls
+
+Clause 13: Notice
+Risk Score : 5 / 100
+Risk Type  : Notice Procedure
+
+Clause 14: Construction
+Risk Score : 20 / 100
+Risk Type  : Jurisdiction
+
+Clause 15: Benefit
+Risk Score : 5 / 100
+Risk Type  : Binding Effect
+
+Clause 16: Counterparts
+Risk Score : 5 / 100
+Risk Type  : Execution Formalities
+
+--------------------------------------------------------------------------------
+KEY RISK FINDINGS
+--------------------------------------------------------------------------------
+
+1. Highest Risk Clause: Clause 11 - Procedure on Termination and Liquidation
+   Risk Score: 70 / 100
+   Risk Type: Termination & Asset Distribution
+
+2. Medium-risk clauses identified: 6
+   These clauses should be reviewed for potential contractual impact.
+
+3. Overall Assessment: The contract has been classified as LOW risk with an overall score of 27.19 / 100.
+
+--------------------------------------------------------------------------------
+DISCLAIMER
+--------------------------------------------------------------------------------
+
+This report is generated using a rule-based contract risk analysis system.
+The risk scores are automated assessments and should not be considered legal advice.
+Contracts should be reviewed by a qualified legal professional before making legal or business decisions.
+
+================================================================================
+END OF CONTRACT RISK REPORT
+================================================================================
