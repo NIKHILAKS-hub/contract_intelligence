@@ -83,22 +83,14 @@ def get_high_risk_clauses(results):
         if result.get("risk_detected") is True:
 
             high_risk.append({
-                "clause_number": result.get(
-                    "clause_number"
-                ),
-                "title": result.get(
-                    "title"
-                ),
-                "risk_level": result.get(
-                    "risk_level"
-                ),
-                "risk_score": result.get(
-                    "risk_score"
-                ),
-                "risk_type": result.get(
-                    "risk_type"
-                )
-            })
+    "clause_number": result.get("clause_number"),
+    "title": result.get("title"),
+    "risk_level": result.get("risk_level"),
+    "risk_score": result.get("risk_score"),
+    "risk_type": result.get("risk_type"),
+    "reason": result.get("reason"),
+    "clause_text": result.get("text")
+})
 
     # Sort highest risk first
     high_risk.sort(
