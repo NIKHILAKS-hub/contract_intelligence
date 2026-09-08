@@ -3,25 +3,26 @@ import json
 import faiss
 import numpy as np
 
-from embedding_generator import generate_embedding
+from src.vector_search.embedding_generator import generate_embedding
 
 
+# Real contract vector database
 VECTOR_DB_DIR = "data/vector_database"
 
 INDEX_PATH = os.path.join(
     VECTOR_DB_DIR,
-    "contract_clauses.index"
+    "contract_repository.index"
 )
 
 METADATA_PATH = os.path.join(
     VECTOR_DB_DIR,
-    "clause_metadata.json"
+    "contract_metadata.json"
 )
 
 
 def load_vector_database():
     """
-    Load the FAISS index and clause metadata.
+    Load the FAISS index and contract metadata.
     """
 
     if not os.path.exists(INDEX_PATH):
@@ -36,7 +37,11 @@ def load_vector_database():
 
     index = faiss.read_index(INDEX_PATH)
 
-    with open(METADATA_PATH, "r", encoding="utf-8") as file:
+    with open(
+        METADATA_PATH,
+        "r",
+        encoding="utf-8"
+    ) as file:
         metadata = json.load(file)
 
     return index, metadata
@@ -44,12 +49,18 @@ def load_vector_database():
 
 def search_clauses(query, top_k=3):
     """
-    Search the vector database using semantic similarity.
+    Search the real contract vector database
+    using semantic similarity.
     """
 
     index, metadata = load_vector_database()
 
-    # Convert search query into an embedding
+    if not query or not query.strip():
+        raise ValueError(
+            "Search query cannot be empty."
+        )
+
+    # Convert query into an embedding
     query_embedding = generate_embedding(query)
 
     # FAISS expects a 2D float32 array
@@ -79,9 +90,18 @@ def search_clauses(query, top_k=3):
         clause = metadata[index_position]
 
         results.append({
-            "clause_number": clause["clause_number"],
-            "title": clause["title"],
-            "text": clause["text"],
+            "filename": clause.get(
+                "filename"
+            ),
+            "clause_number": clause.get(
+                "clause_number"
+            ),
+            "title": clause.get(
+                "title"
+            ),
+            "text": clause.get(
+                "text"
+            ),
             "distance": float(distance)
         })
 
@@ -93,6 +113,10 @@ if __name__ == "__main__":
     print("=" * 70)
     print("CONTRACT SEMANTIC SEARCH")
     print("=" * 70)
+
+    print(
+        "\nSearching real contract repository..."
+    )
 
     query = input(
         "\nEnter your search query: "
@@ -107,10 +131,18 @@ if __name__ == "__main__":
     print("SEARCH RESULTS")
     print("=" * 70)
 
-    for i, result in enumerate(results, start=1):
+    for i, result in enumerate(
+        results,
+        start=1
+    ):
 
         print(f"\nResult {i}")
         print("-" * 70)
+
+        print(
+            f"File          : "
+            f"{result['filename']}"
+        )
 
         print(
             f"Clause Number : "
