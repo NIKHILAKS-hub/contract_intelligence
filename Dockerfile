@@ -6,7 +6,11 @@ COPY requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy application source code
 COPY src ./src
+
+# Copy FAISS vector database
+COPY data ./data
 
 EXPOSE 8000
 

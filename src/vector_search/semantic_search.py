@@ -1,3 +1,5 @@
+# src/vector_search/semantic_search.py
+
 import os
 import json
 import faiss
@@ -6,7 +8,6 @@ import numpy as np
 from src.vector_search.embedding_generator import generate_embedding
 
 
-# Real contract vector database
 VECTOR_DB_DIR = "data/vector_database"
 
 INDEX_PATH = os.path.join(
@@ -21,9 +22,6 @@ METADATA_PATH = os.path.join(
 
 
 def load_vector_database():
-    """
-    Load the FAISS index and contract metadata.
-    """
 
     if not os.path.exists(INDEX_PATH):
         raise FileNotFoundError(
@@ -48,28 +46,21 @@ def load_vector_database():
 
 
 def search_clauses(query, top_k=3):
-    """
-    Search the real contract vector database
-    using semantic similarity.
-    """
-
-    index, metadata = load_vector_database()
 
     if not query or not query.strip():
         raise ValueError(
             "Search query cannot be empty."
         )
 
-    # Convert query into an embedding
+    index, metadata = load_vector_database()
+
     query_embedding = generate_embedding(query)
 
-    # FAISS expects a 2D float32 array
     query_embedding = np.array(
         [query_embedding],
         dtype="float32"
     )
 
-    # Don't request more results than available
     top_k = min(top_k, index.ntotal)
 
     distances, indices = index.search(
@@ -90,9 +81,103 @@ def search_clauses(query, top_k=3):
         clause = metadata[index_position]
 
         results.append({
-            "filename": clause.get(
-                "filename"
-            ),
+            "filename": clause.get("filename"),
+            "clause_number": clause.get("clause_number"),
+            "title": clause.get("title"),
+            "text": clause.get("text"),
+            "distance": float(distance)
+        })
+
+    return results
+
+
+def search_uploaded_clauses(
+    clauses,
+    query,
+    top_k=3
+):
+
+    if not clauses:
+        raise ValueError(
+            "No clauses available for semantic search."
+        )
+
+    if not query or not query.strip():
+        raise ValueError(
+            "Search query cannot be empty."
+        )
+
+    valid_clauses = []
+
+    for clause in clauses:
+
+        text = clause.get("text", "")
+
+        if text and text.strip():
+            valid_clauses.append(clause)
+
+    if not valid_clauses:
+        raise ValueError(
+            "No valid clause text found."
+        )
+
+    embeddings = []
+
+    for clause in valid_clauses:
+
+        embedding = generate_embedding(
+            clause["text"]
+        )
+
+        embeddings.append(embedding)
+
+    embeddings = np.array(
+        embeddings,
+        dtype="float32"
+    )
+
+    dimension = embeddings.shape[1]
+
+    index = faiss.IndexFlatL2(
+        dimension
+    )
+
+    index.add(embeddings)
+
+    query_embedding = generate_embedding(
+        query
+    )
+
+    query_embedding = np.array(
+        [query_embedding],
+        dtype="float32"
+    )
+
+    top_k = min(
+        top_k,
+        index.ntotal
+    )
+
+    distances, indices = index.search(
+        query_embedding,
+        top_k
+    )
+
+    results = []
+
+    for distance, index_position in zip(
+        distances[0],
+        indices[0]
+    ):
+
+        if index_position == -1:
+            continue
+
+        clause = valid_clauses[
+            index_position
+        ]
+
+        results.append({
             "clause_number": clause.get(
                 "clause_number"
             ),
@@ -114,10 +199,6 @@ if __name__ == "__main__":
     print("CONTRACT SEMANTIC SEARCH")
     print("=" * 70)
 
-    print(
-        "\nSearching real contract repository..."
-    )
-
     query = input(
         "\nEnter your search query: "
     )
@@ -126,10 +207,6 @@ if __name__ == "__main__":
         query,
         top_k=3
     )
-
-    print("\n" + "=" * 70)
-    print("SEARCH RESULTS")
-    print("=" * 70)
 
     for i, result in enumerate(
         results,
@@ -163,7 +240,3 @@ if __name__ == "__main__":
             f"\nClause Text:\n"
             f"{result['text']}"
         )
-
-    print("\n" + "=" * 70)
-    print("SEMANTIC SEARCH COMPLETED")
-    print("=" * 70)
